@@ -1,0 +1,8 @@
+This repository contains code for a 2.12 team for their final project.
+
+It includes the following files.
+-Tunable_Model is an object for storing sample data and optimizing a model to fit that sample data
+-Trajectory_Tracker is an object with a Tunable_Model that predicts when the path modeled by the Tunable_Model intersects some zone
+-field.png is used as a demo in Tunable_Model
+
+In order to use it, you'll need NumPy and SciPy.
