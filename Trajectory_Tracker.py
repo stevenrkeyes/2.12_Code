@@ -6,9 +6,9 @@ import numpy as np
 from sympy import geometry as sg
 # TODO: replace sympy; it's extremely slow
 
-import Tunable_Model
+import tunable_model
 
-# A Trajectory_Tracker an object that predicts the motion of a physical
+# A TrajectoryTracker an object that predicts the motion of a physical
 # object, such as a ball, and that can predict the arrival of that object
 # into some zone. To accomplish this, a Trajectory_Tracker includes some
 # tunable model for the general motion for the object as well as a
@@ -18,14 +18,14 @@ import Tunable_Model
 # time to a collision or for estimating time for an uncontrolled object
 # to arrive within the workspace of a robot.
 
-class Trajectory_Tracker:
+class TrajectoryTracker:
     # trajectory_model is a function of time, to be passed to a Tunable_Model
     # and has time as its first argument and all other parameters next
     # trajectory_model_parameters is a guess of those other initial parameters
     # arrival_zone is an instance of sg.entity.GeometryEntity
     def __init__(self, trajectory_model, model_parameters, arrival_zone, t_max = 5):
 
-        self.model = Tunable_Model.Tunable_Model(trajectory_model, model_parameters, dimensions=2)
+        self.model = tunable_model.TunableModel(trajectory_model, model_parameters, dimensions=2)
         
         # inverse time solution function would be nice
 
@@ -71,8 +71,8 @@ if __name__ == "__main__":
                       [166,240],[195,280],[221,322],[246,362],[268,400],
                       [288,436],[304,466],[324,500],[345,532],[362,554]]).transpose()
 
-    #tt = Trajectory_Tracker(g, [-1,1,1], sg.Circle(sg.Point(435, 665), 50))
-    tt = Trajectory_Tracker(g, [-1,1,1], sg.Segment(sg.Point(380, 600), sg.Point(410, 580)))
+    #tt = TrajectoryTracker(g, [-1,1,1], sg.Circle(sg.Point(435, 665), 50))
+    tt = TrajectoryTracker(g, [-1,1,1], sg.Segment(sg.Point(380, 600), sg.Point(410, 580)))
     tt.model.add_samples(tdata, xdata)
     tt.model.optimize_parameters()
     
