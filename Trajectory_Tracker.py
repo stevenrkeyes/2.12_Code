@@ -3,9 +3,7 @@
 # Date: 10 November 2014
 
 import numpy as np
-from sympy import geometry as sg
-# TODO: replace sympy; it's extremely slow
-
+import computational_geometry as cg
 import tunable_model
 
 # A TrajectoryTracker an object that predicts the motion of a physical
@@ -19,10 +17,11 @@ import tunable_model
 # to arrive within the workspace of a robot.
 
 class TrajectoryTracker:
-    # trajectory_model is a function of time, to be passed to a Tunable_Model
+    # trajectory_model is a function of time, to be passed to a TunableModel
     # and has time as its first argument and all other parameters next
     # trajectory_model_parameters is a guess of those other initial parameters
-    # arrival_zone is an instance of sg.entity.GeometryEntity
+    # arrival_zone is an instance from cg, maybe a GeometryEntity of some kind,
+    # though I haven't fleshed that out yet
     def __init__(self, trajectory_model, model_parameters, arrival_zone, t_max = 5):
 
         self.model = tunable_model.TunableModel(trajectory_model, model_parameters, dimensions=2)
@@ -33,32 +32,28 @@ class TrajectoryTracker:
 
         # farthest time to look into the future for planning
         self.t_max = t_max
-        self.t_divisions = 50
+        self.t_divisions = 500
 
     def estimate_arrival_time(self):
         # we're going to estimate the time of arrival by approximating the predicated
         # path as a string of line segments and checking which of these line segments
         # intersects the workspace, if any
         t_points = np.linspace(15, 15+self.t_max, self.t_divisions)
+        curr_t = t_points[0]
+        curr_point = self.model.evaluate(curr_t)
         for i in range(self.t_divisions)[1:]:
-            prev_t = t_points[i-1]
-            prev_coord = self.model.evaluate(prev_t)
-            prev_point = npArr2sgPoint(prev_coord)
+            # shift down to the next line segment
+            prev_t = curr_t
+            prev_point = curr_point
             
             curr_t = t_points[i]
-            curr_coord = self.model.evaluate(curr_t)
-            curr_point = npArr2sgPoint(curr_coord)
+            curr_point = self.model.evaluate(curr_t)
             
-            #self.model
-            #p1 = sg.Point()
-            segment = sg.Segment(prev_point, curr_point)
-            if len(self.arrival_zone.intersection(segment)) > 0:
-                return curr_t
+            segment = cg.Segment(prev_point, curr_point)
+            if self.arrival_zone.intersects(segment):
+                pass #return curr_t
         return None
         
-
-def npArr2sgPoint(npPoint):
-    return sg.Point(npPoint[0], npPoint[1])
         
 if __name__ == "__main__":
     # model where a is acceleration, (2*a + b) is the initial velocity
@@ -72,7 +67,7 @@ if __name__ == "__main__":
                       [288,436],[304,466],[324,500],[345,532],[362,554]]).transpose()
 
     #tt = TrajectoryTracker(g, [-1,1,1], sg.Circle(sg.Point(435, 665), 50))
-    tt = TrajectoryTracker(g, [-1,1,1], sg.Segment(sg.Point(380, 600), sg.Point(410, 580)))
+    tt = TrajectoryTracker(g, [-1,1,1], cg.Segment(np.array([380, 600]), np.array([410, 580])))
     tt.model.add_samples(tdata, xdata)
     tt.model.optimize_parameters()
     
