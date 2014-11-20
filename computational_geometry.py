@@ -11,6 +11,10 @@ class Segment:
     # check if the line segment intersects another line segment
     # see http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
     def intersects(self, other):
+        # first, check if their bounding boxes could possibly intersect (this is a fast check)
+        if not self.bounding_box_translation_intersects(other):
+            return False
+        
         # rewrite the segments in relative vector notation: 
         # p = self.x1; p + r = self.x2; q = other.x1; q + s = other.x2
         p = self.x1
@@ -48,6 +52,33 @@ class Segment:
             else:
                 # the two line segments are not parallel but do not intersect
                 return False
+
+    # check if two lines' bounding boxes intersect
+    # TODO: make this work for general geometric objects, not just lines
+    # TODO: make this work in greater than 2 dimensions
+    # NOTE: currently checking if any vertical or horizontal translation of the bounding box intersects
+    def bounding_box_translation_intersects(self, other):
+        (oleft, oright) = sorted2(other.x1[0], other.x2[0])
+        (sleft, sright) = sorted2(self.x1[0], self.x2[0])
+        (obottom, otop) = sorted2(other.x1[0], other.x2[0])
+        (sbottom, stop) = sorted2(self.x1[0], self.x2[0])
+        
+        #if (sleft > oright) or \
+        #   (sright < oleft) or \
+        #   (stop < obottom) or \
+        #   (sbottom > otop):
+        #    return False
+        #return True
+        return (sleft <= oright) and \
+               (sright >= oleft) and \
+               (stop >= obottom) and \
+               (sbottom <= otop)
+        
+def sorted2(a, b):
+    if a > b:
+        return (b, a)
+    else:
+        return (a, b)
 
 # TODO: substantiate this and other shapes (and their intersection
 # conditions) if we want to be able to input more varied workspaces

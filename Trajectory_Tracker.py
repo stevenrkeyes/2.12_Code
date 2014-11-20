@@ -41,7 +41,7 @@ class TrajectoryTracker:
         t_points = np.linspace(15, 15+self.t_max, self.t_divisions)
         curr_t = t_points[0]
         curr_point = self.model.evaluate(curr_t)
-        for i in range(self.t_divisions)[1:]:
+        for i in range(self.t_divisions)[1:46]:
             # shift down to the next line segment
             prev_t = curr_t
             prev_point = curr_point
@@ -51,7 +51,7 @@ class TrajectoryTracker:
             
             segment = cg.Segment(prev_point, curr_point)
             if self.arrival_zone.intersects(segment):
-                pass #return curr_t
+                return curr_t
         return None
         
         
