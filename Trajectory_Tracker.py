@@ -1,4 +1,4 @@
-# Trajectory_Tracker.py
+# trajectory_tracker.py
 # Author: Steven Keyes for 2.12 team
 # Date: 10 November 2014
 
