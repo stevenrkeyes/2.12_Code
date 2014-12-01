@@ -20,8 +20,8 @@ class NetworkVision:
     def __init__(self):
         ########  Set up TCP/IP Connection ####
         # TCP/IP Connection Attributes
-        #serverIP = '192.168.1.212'  #Use with the 2.12 Servers
-        self.serverIP = 'localhost'      #Use for loopback testing on your own computer
+        self.serverIP = '192.168.1.212'  #Use with the 2.12 Servers
+        #self.serverIP = 'localhost'      #Use for loopback testing on your own computer
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         
         self.sample_rate = 60 # Hz
