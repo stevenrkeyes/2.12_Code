@@ -10,7 +10,6 @@
 import socket # for the network connection
 import time # for polling timing
 import struct # for packaging / unpackaging data
-import signal
 import Queue # for thread safe lists
 
 import repeated_timer # for threads that are called repeatedly
