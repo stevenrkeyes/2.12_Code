@@ -31,7 +31,7 @@ class requestHandler(SocketServer.StreamRequestHandler):
         while requestForUpdate!='':
             # change the value, but only every 0.0166 seconds
             increment = int(round(timestamp / 0.0166))
-            state = [1000, 2000, 3000 + increment, 4000, 5000, 6000]
+            state = [20 + 2*increment, 20 + increment, 3000, 4000, 5000, 6000]
             data1 = ''.join([struct.pack('>H',x) for x in state])
             data2 = struct.pack('>f',timestamp)
             self.wfile.write(data1+data2)

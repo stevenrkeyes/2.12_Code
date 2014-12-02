@@ -23,7 +23,7 @@ class NetworkVision:
         #self.serverIP = 'localhost'      #Use for loopback testing on your own computer
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         
-        self.sample_rate = 60 # Hz
+        self.sample_rate = 120 # Hz
         self.interval = 1.0 / self.sample_rate
         
         # a queue for the received data;

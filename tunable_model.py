@@ -36,7 +36,7 @@ class TunableModel:
         # row vector (1 dim) by resizing
         # and append it to the ysamples
         sample_to_append = ysample.copy()
-        sample_to_append.resize(testmodel.dimensions, 1)
+        sample_to_append.resize(self.dimensions, 1)
         self.ysamples = np.hstack((self.ysamples, sample_to_append))
 
     def add_samples(self, xsamples, ysamples):
