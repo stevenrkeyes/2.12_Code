@@ -15,14 +15,13 @@ class Workspace:
     LX: the length of link X: float
     X0, Y0, Z0: points of origin in robot system: float
     """
-    def __init__(self, X0, Y0, Z0, L1, L2, L3, L4):
+    def __init__(self, X0, Y0, Z0, L1, L2, L3):
         self.X0 = float(X0)
         self.Y0 = float(Y0)
         self.Z0 = float(Z0)
         self.L1 = float(L1)
         self.L2 = float(L2)
         self.L3 = float(L3)
-        self.L4 = float(L4)
 
     """
     Given a point in the ROBOT COORDINATE SYSTEM, figures out whether a point
@@ -42,22 +41,26 @@ class Workspace:
 
         AB_offset = 0.0 #Offset between Link 1 and Link 2
         
-        if math.atan2(xp, yp) > math.pi or math.atan2(xp, yp) < 0.0:
+        if math.atan2(xp, yp) < -math.pi and math.atan2(xp, yp) > 0.0:
+            print("Failure of theta 1")
             return False
 
         #Derive Point A from pseudo-angle
-        xap = self.X0 - self.L1*math.sin(math.atan2(xp, yp))
-        yap = self.Y0 - self.L1*math.cos(math.atan2(xp, yp))
-        zap = self.Z0
+        xap = self.L1*math.sin(math.atan2(xp, yp))
+        yap = self.L1*math.cos(math.atan2(xp, yp))
+        zap = 0.0
 
         z_limit = zap - self.L2
         dist_from_A = math.sqrt(math.pow(xp-xap, 2) + math.pow(yp-yap,2) +
                                 math.pow(zp-zap, 2))
+        print dist_from_A
 
         if zp > z_limit:
+            print("Point too high")
             return False
 
         if dist_from_A < self.L2 or dist_from_A > self.L2 + self.L3:
+            print("Point not in radius")
             return False
 
         return True
