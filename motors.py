@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
-"""
-   example1.py - Move the servos to random positions and print out their current positions
-   www.pirobot.org
-"""
+# motors.py
+# Author: Steven Keyes, based on example code from TA DGonz for 2.12
+# Date: 2 Dec 2014
 
 import os
 import dynamixel
 import time
+import math
 
 class Motors:
     def __init__(self, nServos):
@@ -21,7 +19,7 @@ class Motors:
         if os.name == "posix":
             portName = "/dev/ttyUSB0"
         else:
-            portName = "COM3"
+            portName = "COM4"
             
         # Default baud rate of the USB2Dynamixel device.
         baudRate = 400000
@@ -80,3 +78,23 @@ class Motors:
         for actuator in self.actuators:
             readings.append(actuator.cache[dynamixel.defs.REGISTER['CurrentPosition']])
         return readings
+
+    def set_position_rad(self, motor_number, position_in_radians):
+        p = rad2value(position_in_radians)
+        self.set_motor_position(motor_number, p)
+
+def rad2value(position_in_radians):
+    # get the position in the range -pi/2 to pi/2
+    constrained_p = (position_in_radians + math.pi)%(2*math.pi) - math.pi
+    print constrained_p
+    scaled_p = 2047 + constrained_p*4095/(2*math.pi)
+    return int(scaled_p)
+
+if __name__ == "__main__":
+    m = Motors(3)
+    m.connect()
+    print m.read_motor_positions()
+    # uncomment the below line to set motor number 1 to a position
+    # Warning: Don't do this if the motor is going to hit something!
+    #m.set_position(1, 2047)
+    #4095 max
