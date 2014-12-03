@@ -45,7 +45,7 @@ class NetworkVision:
     # get the current value published by the server
     def get_current_value(self):
         # the server responds if you send it a request for an update
-        self.s.send('r')
+        self.s.send('s')
         # here's the response
         raw = self.s.recv(16)
         x1 = struct.unpack('>H', raw[0:2])[0]
