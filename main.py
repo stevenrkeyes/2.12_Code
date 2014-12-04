@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 import network_vision
 import trajectory_tracker
 import computational_geometry as cg
+import kick
 
 def extract_vision_network_data(vision_network_data):
     return (np.array(vision_network_data[:2]), vision_network_data[6])
@@ -26,7 +27,8 @@ try:
 except socket.error:
     print "unable to connect to server; stopping program"
     sys.exit(0)
-
+#Robot sets up for kick
+kick.wake_up()
 # Start polling the vision network server
 nv.start_polling()
 
@@ -68,7 +70,7 @@ plt.plot([robot_ground_position_x_in_px, robot_ground_position_x_in_px],[12, 880
 # and plot the points
 # for the first few samples (maybe 1/2 a second),
 div10 = 0
-while len(tt.model.xsamples) < 150:
+while len(tt.model.xsamples) < 15:
     new_data = nv.read()
     for datum in new_data:
         (coordinates, timestamp) = extract_vision_network_data(datum)
@@ -87,7 +89,7 @@ print "150 samples collected"
 # and plot the points and trajectory
 estimated_arrival_time = 10000
 time_to_arrival = 10000
-while len(tt.model.xsamples) < 900 and time_to_arrival > 2.0:
+while len(tt.model.xsamples) < 900 and time_to_arrival > 2.0: #TIME THRESHOLD
     new_data = nv.read()
     for datum in new_data:
         (coordinates, timestamp) = extract_vision_network_data(datum)
@@ -114,11 +116,18 @@ while len(tt.model.xsamples) < 900 and time_to_arrival > 2.0:
     time_to_arrival = estimated_arrival_time - tt.model.xsamples[-1]
     print "estimated time to arrival:", time_to_arrival
 
-# then, do the kick trajectory
+kick_motion_time = 0.5
+time.sleep(time_to_arrival - kick_motion_time)
 
+# then, do the kick trajectory
+kick.kick()
+time.sleep(1.5)
+kick.zero()
     
 # stop polling the vision network server
 nv.stop_polling()
+
+kick.m.disconnect()
 
 # close the connection with the vision network server
 print('Closing Connection...')
