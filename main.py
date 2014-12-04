@@ -35,6 +35,7 @@ def sliding_ball_model(t, v_initial, acc, angle):
     return np.array([(v_initial*t**2.0 + acc*t)*np.sin(angle) + 20,
                      (v_initial*t**2.0 + acc*t)*np.cos(angle) + 20])
 initial_guess = [-1,1,1]
+# uncomment value for actual field
 robot_ground_position_x_in_px = 1500#160.25*664/180
 workspace_boundary = cg.Segment(np.array([robot_ground_position_x_in_px, 12]),
                                 np.array([robot_ground_position_x_in_px, 880]))
@@ -53,8 +54,9 @@ start_time = time.time()
 
 # make a plot for the field
 fig = plt.figure()
-#plt.axis([0, 664, 0, 472])
 plt.axis([0, 664*4, 0, 472*4])
+# Uncomment for actual field
+#plt.axis([0, 664, 0, 472])
 plt.ion()
 plt.show()
 
@@ -77,13 +79,15 @@ while len(tt.model.xsamples) < 150:
             plt.scatter(*coordinates)
             plt.draw()
     time.sleep(0.0166)
-
 print "150 samples collected"
+
 # then, until the ball is close enough,
 # read points from the vision server, feed them to the trajectory model,
 # and recalculate a new trajectory and intersection point
 # and plot the points and trajectory
-while len(tt.model.xsamples) < 900:
+estimated_arrival_time = 10000
+time_to_arrival = 10000
+while len(tt.model.xsamples) < 900 and time_to_arrival > 2.0:
     new_data = nv.read()
     for datum in new_data:
         (coordinates, timestamp) = extract_vision_network_data(datum)
@@ -99,24 +103,19 @@ while len(tt.model.xsamples) < 900:
     t_for_fit = np.array([tt.model.xsamples[0], tt.model.xsamples[-1]+5])
     x_fitted = tt.model.evaluate(t_for_fit)
     curve_fit = plt.plot(*x_fitted)
-    print tt.estimate_arrival_time(tt.model.xsamples[-1])
     plt.draw()
-    #time.sleep(0.0166)
 
-
-# then, command the foot to go to x,y position above the intersection point
-# and z position above the ball
-# and, at the time of intersection, lower the foot
-
-# then, (optionally) push the ball somewhere better
+    # estimate the time until arrival
+    e = tt.estimate_arrival_time(tt.model.xsamples[-1])
+    # check if an intersection is predicted
+    if e != None:
+        estimated_arrival_time = e
+    print estimated_arrival_time - tt.model.xsamples[-1]
+    time_to_arrival = estimated_arrival_time - tt.model.xsamples[-1]
+    print "estimated time to arrival:", time_to_arrival
 
 # then, do the kick trajectory
 
-N = 10
-for n in range(0,N):
-    # nv.read() returns any new data points published by the server
-    print "number of new points read:", len(nv.read())
-    time.sleep(0.5)
     
 # stop polling the vision network server
 nv.stop_polling()
