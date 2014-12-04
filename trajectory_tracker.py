@@ -34,11 +34,11 @@ class TrajectoryTracker:
         self.t_max = t_max
         self.t_divisions = 500
 
-    def estimate_arrival_time(self):
+    def estimate_arrival_time(self, current_time):
         # we're going to estimate the time of arrival by approximating the predicated
         # path as a string of line segments and checking which of these line segments
         # intersects the workspace, if any
-        t_points = np.linspace(15, 15+self.t_max, self.t_divisions)
+        t_points = np.linspace(current_time, current_time+self.t_max, self.t_divisions)
         curr_t = t_points[0]
         curr_point = self.model.evaluate(curr_t)
         for i in range(self.t_divisions)[1:]:
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     tt.model.add_samples(tdata, xdata)
     tt.model.optimize_parameters()
     
-    print tt.estimate_arrival_time()
+    print tt.estimate_arrival_time(15)
 
 '''
 class bouncing_ball_trajectory(trajectory):

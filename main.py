@@ -35,8 +35,12 @@ def sliding_ball_model(t, v_initial, acc, angle):
     return np.array([(v_initial*t**2.0 + acc*t)*np.sin(angle) + 20,
                      (v_initial*t**2.0 + acc*t)*np.cos(angle) + 20])
 initial_guess = [-1,1,1]
-tt = trajectory_tracker.TrajectoryTracker(sliding_ball_model, initial_guess,
-                                          cg.Segment(np.array([380, 600]), np.array([410, 580])))
+robot_ground_position_x_in_px = 1500#160.25*664/180
+workspace_boundary = cg.Segment(np.array([robot_ground_position_x_in_px, 12]),
+                                np.array([robot_ground_position_x_in_px, 880]))
+tt = trajectory_tracker.TrajectoryTracker(sliding_ball_model,
+                                          initial_guess,
+                                          workspace_boundary)
 
 # TODO: wait to start trajectory stuff until the ball is actually on the field
 # for now, i'm just waiting until a user specifies that the ball is released
@@ -50,32 +54,55 @@ start_time = time.time()
 # make a plot for the field
 fig = plt.figure()
 #plt.axis([0, 664, 0, 472])
-plt.axis([0, 6640, 0, 4720])
+plt.axis([0, 664*4, 0, 472*4])
 plt.ion()
 plt.show()
+
+# plot the workspace boundary line
+plt.plot([robot_ground_position_x_in_px, robot_ground_position_x_in_px],[12, 880])
 
 # for the first few samples (maybe 1/2 a second),
 # read points from the vision server, feed them to the trajectory model,
 # and plot the points
 # for the first few samples (maybe 1/2 a second),
-while len(tt.model.xsamples) < 300:
+div10 = 0
+while len(tt.model.xsamples) < 150:
     new_data = nv.read()
     for datum in new_data:
-        (coordinates, timestamp)  = extract_vision_network_data(datum)
+        (coordinates, timestamp) = extract_vision_network_data(datum)
         tt.model.add_sample(timestamp, coordinates)
-        # draw the new points
-        plt.scatter(*coordinates)
-        plt.draw()
-    time.sleep(0.0166)    
+        div10 += 1
+        # draw the new points every 10th point or so
+        if div10 % 15 == 0:
+            plt.scatter(*coordinates)
+            plt.draw()
+    time.sleep(0.0166)
 
-# plot the sample points
-#sample_points_plot = plt.plot(*tt.model.ysamples)#, marker='o', linestyle="none")
-
-
+print "150 samples collected"
 # then, until the ball is close enough,
 # read points from the vision server, feed them to the trajectory model,
 # and recalculate a new trajectory and intersection point
 # and plot the points and trajectory
+while len(tt.model.xsamples) < 900:
+    new_data = nv.read()
+    for datum in new_data:
+        (coordinates, timestamp) = extract_vision_network_data(datum)
+        tt.model.add_sample(timestamp, coordinates)
+        div10 += 1
+        if div10 % 15 == 0:
+            plt.scatter(*coordinates)
+            plt.draw()
+    # re-tune the ball trajectory curve fit
+    tt.model.optimize_parameters()
+
+    # plot the predicted ball trajectory
+    t_for_fit = np.array([tt.model.xsamples[0], tt.model.xsamples[-1]+5])
+    x_fitted = tt.model.evaluate(t_for_fit)
+    curve_fit = plt.plot(*x_fitted)
+    print tt.estimate_arrival_time(tt.model.xsamples[-1])
+    plt.draw()
+    #time.sleep(0.0166)
+
 
 # then, command the foot to go to x,y position above the intersection point
 # and z position above the ball
